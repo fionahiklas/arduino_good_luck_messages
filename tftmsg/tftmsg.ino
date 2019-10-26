@@ -1,7 +1,9 @@
-// BMP-loading example specifically for the TFTLCD breakout board.
-// If using the Arduino shield, use the tftbmp_shield.pde sketch instead!
-// If using an Arduino Mega make sure to use its hardware SPI pins, OR make
-// sure the SD library is configured for 'soft' SPI in the file Sd2Card.h.
+//
+// Good Luck message display using bitmaps.
+// Based on the tftbmp example code from the Adafruit_TFTLCD library
+//
+// Using a cheap Elegoo 2.8" TFT Touchcreen display
+//
 
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_TFTLCD.h> // Hardware-specific library
@@ -16,22 +18,7 @@
 #define LCD_WR A1 // LCD Write goes to Analog 1
 #define LCD_RD A0 // LCD Read goes to Analog 0
 
-// When using the BREAKOUT BOARD only, use these 8 data lines to the LCD:
-// For the Arduino Uno, Duemilanove, Diecimila, etc.:
-//   D0 connects to digital pin 8  (Notice these are
-//   D1 connects to digital pin 9   NOT in order!)
-//   D2 connects to digital pin 2
-//   D3 connects to digital pin 3
-//   D4 connects to digital pin 4
-//   D5 connects to digital pin 5
-//   D6 connects to digital pin 6
-//   D7 connects to digital pin 7
-// For the Arduino Mega, use digital pins 22 through 29
-// (on the 2-row header at the end of the board).
-
-// For Arduino Uno/Duemilanove, etc
-//  connect the SD card with DI going to pin 11, DO going to pin 12 and SCK going to pin 13 (standard)
-//  Then pin 10 goes to CS (or whatever you have set up)
+// Chip select pin for the SD SPI interface
 #define SD_CS 10     // Set the chip select line to whatever you use (10 doesnt conflict with the library)
 
 // In the SD card, place 24 bit color BMP files (be sure they are 24-bit!)
@@ -46,31 +33,9 @@ void setup()
 
   tft.reset();
 
-  uint16_t identifier = tft.readID();
-identifier = 0x9341;
-  if(identifier == 0x9325) {
-    Serial.println(F("Found ILI9325 LCD driver"));
-  } else if(identifier == 0x9328) {
-    Serial.println(F("Found ILI9328 LCD driver"));
-  } else if(identifier == 0x7575) {
-    Serial.println(F("Found HX8347G LCD driver"));
-  } else if(identifier == 0x9341) {
-    Serial.println(F("Found ILI9341 LCD driver"));
-  } else if(identifier == 0x8357) {
-    Serial.println(F("Found HX8357D LCD driver"));
-  } else {
-    Serial.print(F("Unknown LCD driver chip: "));
-    Serial.println(identifier, HEX);
-    Serial.println(F("If using the Adafruit 2.8\" TFT Arduino shield, the line:"));
-    Serial.println(F("  #define USE_ADAFRUIT_SHIELD_PINOUT"));
-    Serial.println(F("should appear in the library header (Adafruit_TFT.h)."));
-    Serial.println(F("If using the breakout board, it should NOT be #defined!"));
-    Serial.println(F("Also if using the breakout, double-check that all wiring"));
-    Serial.println(F("matches the tutorial."));
-    return;
-  }
-
-  tft.begin(identifier);
+  // The Elegoo TFT display uses this driver but the usual code for 
+  // getting the indentifier doesn't seem to work so this is hard-coded
+  tft.begin(0x9341);
 
   Serial.print(F("Initializing SD card..."));
   if (!SD.begin(SD_CS)) {
@@ -78,21 +43,13 @@ identifier = 0x9341;
     return;
   }
   Serial.println(F("OK!"));
-
-  bmpDraw("tiger.bmp", 0, 0);
-  delay(1000);
 }
 
 void loop()
 {
-  for(int i = 0; i<4; i++) {
-    tft.setRotation(i);
-    tft.fillScreen(0);
-    for(int j=0; j <= 200; j += 50) {
-      bmpDraw("tiger.bmp", j, j);
-    }
-    delay(1000);
-  }
+  tft.setRotation(1);
+  bmpDraw("luck1.bmp", 0, 0);
+  delay(2000);
 }
 
 // This function opens a Windows Bitmap (BMP) file and
